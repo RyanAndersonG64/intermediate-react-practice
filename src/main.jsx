@@ -1,12 +1,13 @@
-import React from 'react'
+import React, { useReducer } from 'react'
 import ReactDOM from 'react-dom/client'
 import {
   createBrowserRouter,
   RouterProvider,
   Outlet,
 } from 'react-router-dom'
+import { createContext } from 'react'
 
-// project styles
+
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
 
@@ -16,9 +17,46 @@ import ErrorPage from './ErrorPage'
 import Header from './Header'
 import Footer from './Footer'
 
+const initialState = {
+  team: [],
+  error: null
+}
+const teamReducer = (state, action) => {
+  switch(action.type) {
+    case 'addMember':
+      return state.team.length >= 4 ? (
+        {
+          ...state,
+          error: 'Too many!'
+        }
+      ) : (
+        {
+          ...state,
+          team: [...state.team,{name: action.name, health: action.health, attack: action.attack, speed: action.speed}]
+        }
+      )
+      default: 
+      throw new Error('Skill issue')
+    }
+  }
 
-function Layout() {
-  return (
+  export const TeamContext = createContext()
+  
+  const TeamProvider = ({ children }) => {
+    const [state, dispatch] = useReducer(teamReducer, initialState)
+    
+    return (
+      <TeamContext.Provider value={{ state, dispatch }}>
+        {children}
+      </TeamContext.Provider>
+    )}
+  
+  
+    
+    // project styles
+
+  function Layout() {
+    return (
       <>
         <Header />
         <div id='page-content'>
@@ -47,6 +85,9 @@ const router = createBrowserRouter([
   }
 ])
 
+
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <RouterProvider router={router} />
+  <TeamProvider>
+    <RouterProvider router={router} />
+  </TeamProvider>
 )
